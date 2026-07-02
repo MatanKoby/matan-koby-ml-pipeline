@@ -14,11 +14,15 @@ WORKDIR /mlops-assignment
 COPY pyproject.toml .
 COPY uv.lock .
 
-RUN uv sync --locked
+# Install runtime deps only (not the root project, which is not a package; no dev tools).
+RUN uv sync --locked --no-install-project --no-dev
 
 ENV PATH="/mlops-assignment/.venv/bin:$PATH"
+# So `python -m pipeline.summarize` and the pipeline imports resolve inside the container.
+ENV PYTHONPATH="/mlops-assignment"
 
 COPY scripts scripts/
+COPY pipeline pipeline/
 
 # Optional but useful if your script lacks executable bit or shebang issues:
 RUN chmod +x scripts/*.sh

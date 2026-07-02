@@ -1,0 +1,6 @@
+# Custom Airflow image for docker-compose: the stock image + the Docker provider so the
+# evaluate_agent DAG can use DockerOperator. The pipeline/ package is mounted at runtime
+# (see docker-compose.yaml) with PYTHONPATH=/opt/airflow, so DAGs can import it.
+FROM apache/airflow:3.2.2
+
+RUN pip install --no-cache-dir "apache-airflow-providers-docker>=4"

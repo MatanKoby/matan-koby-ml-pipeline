@@ -10,3 +10,13 @@ __pycache__
 
 mini-swe-agent/
 SWE-bench/
+
+# pytest
+.pytest_cache/
+
+# Local MLflow store (throwaway; the pipeline uses a DB backend / MLflow server)
+mlruns/
+mlflow.db
+
+# Run artifacts (a curated runs/<run-id>/ example is committed separately)
+runs/

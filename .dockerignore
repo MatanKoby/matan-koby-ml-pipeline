@@ -1,0 +1,26 @@
+# Keep the Docker build context small. The Dockerfile only needs pyproject.toml, uv.lock,
+# scripts/, and pipeline/; everything below is excluded from the build context.
+.git/
+.venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Local artifacts / stores
+runs/
+mlruns/
+mlflow.db
+logs/
+
+# Cloned upstream reference repos (not used by the image)
+mini-swe-agent/
+SWE-bench/
+
+# Not needed in the image
+tests/
+sample/
+screenshots/
+config/
+plugins/
+.env
