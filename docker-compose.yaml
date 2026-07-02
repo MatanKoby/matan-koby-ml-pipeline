@@ -183,8 +183,8 @@ services:
     command:
       - -c
       - |
-        mkdir -p /opt/airflow/{logs,dags,plugins,config}
-        chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/
+        mkdir -p /opt/airflow/{logs,dags,plugins,config} /opt/project/runs
+        chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/ /opt/project/runs
         exec /entrypoint airflow version
     environment:
       <<: *airflow-common-env
@@ -206,6 +206,7 @@ services:
       - >
         mlflow server --host 0.0.0.0 --port 5000
         --backend-store-uri sqlite:////mlflow/mlflow.db
+        --allowed-hosts '*'
         --serve-artifacts --artifacts-destination /mlflow/artifacts
     ports:
       - "5000:5000"

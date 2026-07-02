@@ -15,7 +15,8 @@ COPY pyproject.toml .
 COPY uv.lock .
 
 # Install runtime deps only (not the root project, which is not a package; no dev tools).
-RUN uv sync --locked --no-install-project --no-dev
+# Pin Python 3.12: mlflow's server is not yet compatible with Python 3.14.
+RUN uv sync --locked --no-install-project --no-dev --python 3.12
 
 ENV PATH="/mlops-assignment/.venv/bin:$PATH"
 # So `python -m pipeline.summarize` and the pipeline imports resolve inside the container.

@@ -147,11 +147,16 @@ steps (real agent inference, SWE-bench Docker eval) are validated by a real run 
 
 ## One completed run
 
-> To be filled after the first real run on the Nebius VM (Stage E): the `run_id`, params, the
-> resolved `metrics.json` (e.g. `resolve_rate`), the MLflow run link, and a curated copy of
-> the run folder. Screenshots go in `screenshots/` (`airflow_dag.png`, `mlflow_runs.png`).
-> We grade for provenance and reproducibility over the metric value, so a small `0:3` run is
-> sufficient evidence.
+Ran end-to-end on a Nebius VM (8 CPU / 32 GB) via `docker compose` + DockerOperator.
+
+- **run_id:** `20260702-160657`
+- **Params:** `split=test`, `subset=verified`, `workers=1`, `model=nebius/moonshotai/Kimi-K2.6`, `task_slice=0:3`, `cost_limit=3.0`, `dataset=princeton-nlp/SWE-bench_Verified`
+- **Result:** submitted 3, **resolved 2**, unresolved 1, **`resolve_rate = 0.667`**
+- **Airflow:** all four tasks green (`prepare_run → run_agent → run_eval → summarize_and_log`) — see `screenshots/airflow_dag.png`.
+- **MLflow:** logged to experiment `swe-bench-eval` with the params/metrics above — see `screenshots/mlflow_runs.png`.
+- **Artifacts:** full `runs/20260702-160657/` tree (config, preds, trajectories, eval logs/reports, `metrics.json`, `manifest.json`).
+
+Reproduce: trigger `evaluate_agent` with the same params (or set `run_id`), see "How to run" above.
 
 ## Notes / caveats
 
