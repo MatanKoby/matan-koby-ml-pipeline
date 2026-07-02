@@ -45,7 +45,7 @@ compose stack.
 | `Dockerfile.airflow` | Airflow image + Docker provider. |
 | `docker-compose.yaml` | Airflow + MLflow deployment. |
 | `tests/` | Offline test suite (see below). |
-| `runs/<run-id>/` | Per-run artifacts (gitignored; the completed run is documented below, and `sample/` shows the identical structure). |
+| `runs/<run-id>/` | Per-run artifacts (gitignored in general; the real run `runs/20260702-160657/` is committed as a worked example). |
 
 ## Configuration (Airflow params)
 
@@ -155,7 +155,7 @@ Ran end-to-end on a Nebius VM (8 CPU / 32 GB) via `docker compose` + DockerOpera
 - **Result:** submitted 3, **resolved 2**, unresolved 1, **`resolve_rate = 0.667`**
 - **Airflow:** all four tasks green (`prepare_run -> run_agent -> run_eval -> summarize_and_log`). See `screenshots/airflow_dag.png`.
 - **MLflow:** logged to experiment `swe-bench-eval` with the params/metrics above. See `screenshots/mlflow_runs.png`.
-- **Artifacts:** the run produced the full `runs/20260702-160657/` tree (config, preds, trajectories, eval logs/reports, `metrics.json`, `manifest.json`). It is gitignored; the repo's `sample/` folder shows the identical layout.
+- **Artifacts:** the full `runs/20260702-160657/` tree is committed to the repo (config, preds, 3 trajectories, eval report + logs, `metrics.json`, `manifest.json`), so the run is reconstructable directly from the repo.
 
 Reproduce: trigger `evaluate_agent` with the same params (or set `run_id`), see "How to run" above.
 

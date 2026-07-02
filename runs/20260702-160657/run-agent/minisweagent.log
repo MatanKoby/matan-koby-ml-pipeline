@@ -1,0 +1,13 @@
+2026-07-02 16:07:02,239 - minisweagent - INFO - Loading dataset princeton-nlp/SWE-Bench_Verified, split test...
+2026-07-02 16:07:06,621 - minisweagent - INFO - Instance slice: 500 -> 3 instances
+2026-07-02 16:07:06,622 - minisweagent - INFO - Running on 3 instances...
+2026-07-02 16:07:06,623 - minisweagent - INFO - Building agent config from specs: ['swebench.yaml', 'agent.cost_limit=3.0']
+2026-07-02 16:07:09,878 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-f42df1f2 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.astropy_1776_astropy-12907:latest sleep 2h
+2026-07-02 16:07:10,086 - minisweagent.environment - INFO - Started container minisweagent-f42df1f2 with ID 795f6e804c2cb923bf904d48ff5634e1a4bfa79692d508ea14f27a9bf9c7faa4
+2026-07-02 16:07:56,738 - minisweagent - INFO - Saved trajectory to '/opt/project/runs/20260702-160657/run-agent/astropy__astropy-12907/astropy__astropy-12907.traj.json'
+2026-07-02 16:07:56,740 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-d877cf1e -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.astropy_1776_astropy-13033:latest sleep 2h
+2026-07-02 16:07:56,967 - minisweagent.environment - INFO - Started container minisweagent-d877cf1e with ID 7b641cbf0cee2b08600edd860ccad929e3d28c04d62cc2d77938a805fd1b976f
+2026-07-02 16:12:39,960 - minisweagent - INFO - Saved trajectory to '/opt/project/runs/20260702-160657/run-agent/astropy__astropy-13033/astropy__astropy-13033.traj.json'
+2026-07-02 16:12:39,963 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-42581ab2 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.astropy_1776_astropy-13236:latest sleep 2h
+2026-07-02 16:12:40,155 - minisweagent.environment - INFO - Started container minisweagent-42581ab2 with ID 8086f565fba1b823172528553e0a65b859c9504802c9fc3ec4510bc091f98e1b
+2026-07-02 16:16:38,529 - minisweagent - INFO - Saved trajectory to '/opt/project/runs/20260702-160657/run-agent/astropy__astropy-13236/astropy__astropy-13236.traj.json'
