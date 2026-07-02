@@ -9,13 +9,13 @@ on a subset of SWE-bench, evaluates the patches with the
 
 ```
 Airflow DAG: evaluate_agent
-  prepare_run ─▶ run_agent ─▶ run_eval ─▶ summarize_and_log
+  prepare_run -> run_agent -> run_eval -> summarize_and_log
     (PythonOp)   (DockerOp)   (DockerOp)   (DockerOp)
 ```
 
 - **prepare_run** (Airflow worker): reads Airflow params, builds a resolved run config,
   creates `runs/<run-id>/` with `config.json`, and returns the container commands.
-- **run_agent** (DockerOperator, project image): runs `mini-extra swebench …` writing
+- **run_agent** (DockerOperator, project image): runs `mini-extra swebench ...` writing
   trajectories + `preds.json` into `runs/<run-id>/run-agent/`.
 - **run_eval** (DockerOperator, project image): runs the SWE-bench harness on `preds.json`,
   writing logs + the summary report into `runs/<run-id>/run-eval/`.
@@ -27,10 +27,11 @@ instance containers (docker-out-of-docker). All run artifacts land in a shared `
 mounted at the same path (`/opt/project/runs`) in the Airflow workers and the task
 containers, so every step sees the same run folder.
 
-Deployment mirrors the assignment's two modes:
-- **Easy mode:** `bash run-airflow-standalone.sh` (Airflow standalone). Useful for iterating.
-- **Production mode:** `docker compose up` runs Airflow (CeleryExecutor + Postgres + Redis)
-  and MLflow; the DAG uses DockerOperator with the project image.
+Deployment is via `docker compose` (see "How to run"): it brings up Airflow
+(CeleryExecutor + Postgres + Redis) and MLflow, and the `evaluate_agent` DAG runs its heavy
+steps with `DockerOperator` using the project image. The provided `run-airflow-standalone.sh`
+is a quick-start for the bundled example DAG only; the DockerOperator pipeline needs the
+compose stack.
 
 ## Repository layout
 
@@ -44,15 +45,15 @@ Deployment mirrors the assignment's two modes:
 | `Dockerfile.airflow` | Airflow image + Docker provider. |
 | `docker-compose.yaml` | Airflow + MLflow deployment. |
 | `tests/` | Offline test suite (see below). |
-| `runs/<run-id>/` | Per-run artifacts (gitignored; a curated example is described below). |
+| `runs/<run-id>/` | Per-run artifacts (gitignored; the completed run is documented below, and `sample/` shows the identical structure). |
 
 ## Configuration (Airflow params)
 
 | Param | Required | Default | Maps to |
 |---|---|---|---|
-| `split` | ✅ | `test` | `--split` |
-| `subset` | ✅ | `verified` | `--subset` + eval `--dataset_name` |
-| `workers` | ✅ | `1` | `--workers` / `--max_workers` |
+| `split` | yes | `test` | `--split` |
+| `subset` | yes | `verified` | `--subset` + eval `--dataset_name` |
+| `workers` | yes | `1` | `--workers` / `--max_workers` |
 | `model` | | `nebius/moonshotai/Kimi-K2.6` | `--model` |
 | `task_slice` | | `0:3` | `--slice` |
 | `run_id` | | auto (UTC timestamp) | run folder name + eval `--run_id` |
@@ -101,7 +102,7 @@ the folder and they can reconstruct the whole run.
 
 `summarize_and_log` logs, per run: params (`split`, `subset`, `workers`, `model`,
 `task_slice`, `cost_limit`, `run_id`, `dataset_name`), metrics (`resolve_rate`,
-`resolved_instances`, `submitted_instances`, …), the `run_id`/`artifact_uri` tags, and the
+`resolved_instances`, `submitted_instances`, and so on), the `run_id`/`artifact_uri` tags, and the
 `config.json`/`metrics.json`/`manifest.json` artifacts. Compare runs in the MLflow UI.
 
 ## Rerun by run-id
@@ -111,10 +112,10 @@ the folder and they can reconstruct the whole run.
 - To reproduce someone else's run, read `manifest.json` (`run_config` + `provenance.git_commit`),
   check out that commit, and trigger with the same params/`run_id`.
 
-## Object Storage (S3) — how it would be uploaded
+## Object Storage (S3): how it would be uploaded
 
-Remote storage is **extra credit** in the rubric and is **not** implemented here (we have no
-bucket). The pipeline instead writes a complete local `runs/<run-id>/` and records
+Remote storage is **extra credit** in the rubric and is **not** implemented here (no bucket was
+provisioned). The pipeline instead writes a complete local `runs/<run-id>/` and records
 `storage.remote_uri: null` in the manifest. To enable uploads:
 
 1. **Provision** a Nebius Object Storage bucket (S3-compatible): create a bucket
@@ -125,7 +126,7 @@ bucket). The pipeline instead writes a complete local `runs/<run-id>/` and recor
 3. **Add** an `upload_artifacts` DockerOperator step between `run_eval` and
    `summarize_and_log` that mirrors `runs/<run-id>/` to `s3://$S3_BUCKET/runs/<run-id>/` with
    `boto3` (S3-compatible client using `endpoint_url=$S3_ENDPOINT_URL`), then sets
-   `manifest.json`'s `storage.remote_uri` to the `s3://…` URI and tags the MLflow run with it.
+   `manifest.json`'s `storage.remote_uri` to the `s3://...` URI and tags the MLflow run with it.
 
 Sketch:
 
@@ -140,7 +141,7 @@ for path in run_dir.rglob("*"):
 ## Tests
 
 `uv run pytest` runs an offline suite that validates everything up to the container boundary:
-config resolution, `.env` parsing, command/env construction (the param→CLI mapping),
+config resolution, `.env` parsing, command/env construction (the param-to-CLI flag mapping),
 `runs/<id>/` layout, metrics parsing, manifest building, real MLflow logging (sqlite
 backend), and DAG parsing (via the Airflow tool env with the Docker provider). The two heavy
 steps (real agent inference, SWE-bench Docker eval) are validated by a real run on the VM.
@@ -152,9 +153,9 @@ Ran end-to-end on a Nebius VM (8 CPU / 32 GB) via `docker compose` + DockerOpera
 - **run_id:** `20260702-160657`
 - **Params:** `split=test`, `subset=verified`, `workers=1`, `model=nebius/moonshotai/Kimi-K2.6`, `task_slice=0:3`, `cost_limit=3.0`, `dataset=princeton-nlp/SWE-bench_Verified`
 - **Result:** submitted 3, **resolved 2**, unresolved 1, **`resolve_rate = 0.667`**
-- **Airflow:** all four tasks green (`prepare_run → run_agent → run_eval → summarize_and_log`) — see `screenshots/airflow_dag.png`.
-- **MLflow:** logged to experiment `swe-bench-eval` with the params/metrics above — see `screenshots/mlflow_runs.png`.
-- **Artifacts:** full `runs/20260702-160657/` tree (config, preds, trajectories, eval logs/reports, `metrics.json`, `manifest.json`).
+- **Airflow:** all four tasks green (`prepare_run -> run_agent -> run_eval -> summarize_and_log`). See `screenshots/airflow_dag.png`.
+- **MLflow:** logged to experiment `swe-bench-eval` with the params/metrics above. See `screenshots/mlflow_runs.png`.
+- **Artifacts:** the run produced the full `runs/20260702-160657/` tree (config, preds, trajectories, eval logs/reports, `metrics.json`, `manifest.json`). It is gitignored; the repo's `sample/` folder shows the identical layout.
 
 Reproduce: trigger `evaluate_agent` with the same params (or set `run_id`), see "How to run" above.
 
